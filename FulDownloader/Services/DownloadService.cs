@@ -1,0 +1,33 @@
+namespace FulDownloader.Services;
+
+using Microsoft.JSInterop;
+
+public class DownloadService : IDownloadService
+{
+    private readonly IJSRuntime _jsRuntime;
+
+    public DownloadService(IJSRuntime jsRuntime)
+    {
+        _jsRuntime = jsRuntime;
+    }
+
+    public async Task DownloadMp4Async(string fileName, string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File {fileName} not found");
+            }
+
+            var fileBytes = await File.ReadAllBytesAsync(filePath);
+            var base64 = Convert.ToBase64String(fileBytes);
+            
+            await _jsRuntime.InvokeVoidAsync("downloadLargeFile", fileName);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+}

@@ -1,0 +1,217 @@
+@page "/"
+@page "/YTDownloader"
+
+@using YoutubeDLSharp
+@using YoutubeDLSharp.Options
+@using FFMpegCore
+@using FFMpegCore.Enums
+@using Models
+@using FulDownloader.Extensions
+@using FulDownloader.Services
+
+<h2>YouTube Downloader</h2>
+<br/>
+<MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+    <MudTextField @bind-Value="YoutubeUrl" Label="Youtube URL" Variant="Variant.Outlined" FullWidth="true" Disabled="@(Busy || Downloading)"
+                  Validation="@(new Func<string, string?>(ValidateUrl))" OnDebounceIntervalElapsed="GetVideoData" DebounceInterval="400"></MudTextField>
+    <br/>
+    @if (Busy)
+    {
+        <MudProgressCircular Style="height:100px;width:100px;" Indeterminate="true" Color="Color.Primary">
+            <ChildContent>Getting data</ChildContent>
+        </MudProgressCircular>
+    }
+    <VideoDownload Disabled="Downloading" VideoData="VideoDataResult" VideoFormatSelected="GetVideo"></VideoDownload>
+    <ProgressBar @ref="ProgBar" Visible="Downloading" ></ProgressBar>
+</MudStack>
+
+@code {
+    [Inject] IDownloadService DownloadService { get; set; } = null!;
+    [Inject] ISnackbar Snackbar { get; set; } = null!;
+    [Inject] IJSRuntime JsRuntime { get; set; } = null!;
+
+    public string YoutubeUrl { get; set; } = string.Empty;
+    bool UrlValid { get; set; }
+    bool Busy { get; set; }
+    bool Downloading { get; set; }
+    
+    private YoutubeDL? Ytdl { get; set; }
+    private VideoDataModel? VideoDataResult { get; set; }
+    private ProgressBar ProgBar { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Ytdl = new YoutubeDL();
+            Ytdl.YoutubeDLPath = Globals.BinFolder + "yt-dlp"; //Globals.YtdlPath;
+            Ytdl.FFmpegPath = Globals.BinFolder + "ffmpeg"; //Globals.FfmpegPath;
+            Ytdl.OutputFolder = Globals.DownloadPath;
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+            throw;
+        }
+    }
+
+    private string? ValidateUrl(string arg)
+    {
+        VideoDataResult = null;
+        string errorMessage = "Invalid YouTube URL";
+        if (string.IsNullOrWhiteSpace(YoutubeUrl) ||
+            !Uri.TryCreate(YoutubeUrl, UriKind.Absolute, out var uri) ||
+            (!uri.Host.Contains("youtube.com") && !uri.Host.Contains("youtu.be")))
+        {
+            UrlValid = false;
+            StateHasChanged();
+            return errorMessage;
+        }
+
+        UrlValid = true;
+        StateHasChanged();
+        return null;
+    }
+
+    async Task GetVideoData()
+    {
+        if (UrlValid)
+        {
+            Busy = true;
+            
+            try
+            {
+                if (Ytdl == null)
+                    throw new NullReferenceException("Ytdl was not instantiated.");
+                
+                var result = await Ytdl.RunVideoDataFetch(YoutubeUrl);
+                var videoDataList = new List<VideoFormatModel>();
+                foreach (var format in result.Data.Formats.Where(x => x.Extension == "mp4" && x.VideoCodec.StartsWith("av01")))
+                {
+                    videoDataList.Add(new VideoFormatModel()
+                    {
+                        Resolution = format.Resolution,
+                        FrameRate = format.FrameRate,
+                        FormatNote = format.FormatNote,
+                        FormatCode = format.FormatId,
+                        Uri = format.Url
+                    });
+                }
+
+                VideoDataResult = new VideoDataModel
+                {
+                    VideoName = result.Data.Title.ToSafeFilename(),
+                    VideoThumbnail = result.Data.Thumbnail,
+                    VideoFormats = videoDataList,
+                    VideoDuration = result.Data.Duration
+                };
+            }
+            catch (Exception e)
+            {
+                Snackbar.Add($"Error: {e.Message}", Severity.Error);
+                JsRuntime.InvokeVoidAsync("consoleWriteLine", e.Message);
+                JsRuntime.InvokeVoidAsync("consoleWriteLine", e.StackTrace);
+            }
+            finally
+            {
+                Busy = false;
+            }
+        }
+    }
+
+    async Task GetVideo(VideoFormatModel formatModel)
+    {
+        Downloading = true;
+        ProgBar.ResetProgress();
+        StateHasChanged();
+
+        try
+        {
+            if (!File.Exists(VideoDataResult.VideoFilePath))
+            {
+                await DownloadAndProcessVideo(formatModel);
+                return;
+            }
+
+            var analysis = await FFProbe.AnalyseAsync(VideoDataResult.VideoFilePath);
+            var resolution = $"{analysis.VideoStreams[0]?.Width}x{analysis.VideoStreams[0]?.Height}";
+            if (resolution == formatModel.Resolution)
+            {
+                ProgBar.Title = "Fetching Video";
+                StateHasChanged();
+                await DownloadService.DownloadMp4Async(VideoDataResult.VideoFilename, VideoDataResult.VideoFilePath);
+            }
+            else
+            {
+                await DownloadAndProcessVideo(formatModel);
+            }
+        }
+        catch (Exception e)
+        {
+            JsRuntime.InvokeVoidAsync("consoleWriteLine", e.Message);
+            JsRuntime.InvokeVoidAsync("consoleWriteLine", e.StackTrace);
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            Downloading = false;
+            StateHasChanged();
+        }
+    }
+
+    async Task DownloadAndProcessVideo(VideoFormatModel formatModel)
+    {
+        try
+        {
+            if (Ytdl != null)
+            {
+                var progress = new Progress<DownloadProgress>(p => ProgBar.UpdateProgress(p.Progress * 100));
+                Action<double> encodingProgress = new Action<double>(p =>
+                {
+                    //progress value from 0 to 100
+                    InvokeAsync(() =>
+                    {
+                        ProgBar.UpdateProgress(p);
+                    });
+                });
+                var cts = new CancellationTokenSource();
+
+                
+                ProgBar.UpdateTitle("Downloading Video");
+                var options = new OptionSet() { Format = formatModel.FormatCode };
+                var vResult = await Ytdl.RunVideoDownload(YoutubeUrl, overrideOptions: options, progress: progress, ct: cts.Token);
+                JsRuntime.InvokeVoidAsync("consoleWriteLine", vResult);
+                ProgBar.ResetProgress();
+                ProgBar.UpdateTitle("Downloading Audio");
+                var aResult = await Ytdl.RunAudioDownload(YoutubeUrl, AudioConversionFormat.Mp3, progress: progress, ct: cts.Token);
+
+                ProgBar.ResetProgress();
+                ProgBar.UpdateTitle("Processing");
+                await FFMpegArguments.FromFileInput(vResult.Data)
+                    .AddFileInput(aResult.Data)
+                    .OutputToFile(VideoDataResult.VideoFilePath, true, options => options
+                        .CopyChannel()
+                        .ForceFormat(VideoType.Mp4)
+                        .WithFastStart()
+                        .WithConstantRateFactor(27)
+                        .WithSpeedPreset(Speed.VeryFast))
+                    .NotifyOnProgress(encodingProgress, new TimeSpan(0, 0, Convert.ToInt32(VideoDataResult.VideoDuration)))
+                    .ProcessAsynchronously();
+
+                File.Delete(vResult.Data);
+                File.Delete(aResult.Data);
+
+                ProgBar.Title = "Fetching Video";
+                StateHasChanged();
+                await DownloadService.DownloadMp4Async(VideoDataResult.VideoFilename, VideoDataResult.VideoFilePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            JsRuntime.InvokeVoidAsync("consoleWriteLine", ex.Message);
+            JsRuntime.InvokeVoidAsync("consoleWriteLine", ex.StackTrace);
+        }
+    }   
+}

@@ -1,0 +1,42 @@
+@using Models
+
+@if (VideoData != null)
+{
+    <MudStack>
+        <MudText Typo="Typo.h4">@VideoData.VideoName</MudText>
+
+        <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Start" Wrap="Wrap.Wrap" >
+            
+            <MudImage Src="@VideoData.VideoThumbnail" ObjectFit="ObjectFit.Contain" Width="800" Fluid="true" Elevation="0" Class="rounded-lg"/>
+            <MudDataGrid T="VideoFormatModel" Items="@VideoData.VideoFormats" Dense="true" >
+                <Columns>
+                    <PropertyColumn Property="x => x.Resolution"></PropertyColumn>
+                    <PropertyColumn Property="x => x.FrameRate" Title="Frame Rate"></PropertyColumn>
+                    <PropertyColumn Property="x => x.FormatNote" Title="Format"></PropertyColumn>
+                    <TemplateColumn>
+                        <CellTemplate>
+                            <MudStack Row>
+                                <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Primary" Variant="Variant.Filled"
+                                           OnClick="@(() => SelectVideoFormat(context.Item))" Disabled="Disabled">Download</MudButton>
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
+            
+        </MudStack>
+    </MudStack>
+}
+
+@code {
+    [Parameter] public VideoDataModel? VideoData { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    [Parameter] public EventCallback<VideoFormatModel> VideoFormatSelected { get; set; }
+
+    private async Task SelectVideoFormat(VideoFormatModel formatModel)
+    {
+        if (VideoFormatSelected.HasDelegate)
+            await VideoFormatSelected.InvokeAsync(formatModel);
+    }
+}
