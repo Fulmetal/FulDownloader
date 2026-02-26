@@ -43,8 +43,7 @@ public static class Scheduler
         IJobDetail job = JobBuilder.Create<VideoCleanupJob>()
             .WithIdentity("VideoCleanupJob", "downloaderGroup")
             .Build();
-        
-        //TODO: change chron schedule to every few hours
+
         ITrigger trigger = TriggerBuilder.Create()
             .WithIdentity("VideoCleanupTrigger", "downloaderGroup")
             .WithCronSchedule("0 0 */2 ? * *") //every 2 hours
