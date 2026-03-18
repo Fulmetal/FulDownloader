@@ -2,9 +2,14 @@
 
 A self hosted web application that allows you to download videos video hosting sites (currently only supports youtube)
 
+![image info](./fuldownloader_image.png)
+
 ## Features
 - Download content quickly and easily.
 - User-friendly interface.
+- No popups, telemetry or tracking
+- Self hosted
+- Open source
 
 ## Docker image
 Docker image can be found on:
