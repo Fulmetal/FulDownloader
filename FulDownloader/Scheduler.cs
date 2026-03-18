@@ -13,6 +13,7 @@ public static class Scheduler
     {
         await StartScheduler();
         await ScheduleVideoCleanupJob();
+        await ScheduleYtdlpUpdateJob();
     }
 
     public static async Task StartScheduler()
@@ -46,9 +47,22 @@ public static class Scheduler
 
         ITrigger trigger = TriggerBuilder.Create()
             .WithIdentity("VideoCleanupTrigger", "downloaderGroup")
-            .WithCronSchedule("0 0 */2 ? * *") //every 2 hours
+            .WithCronSchedule("0 0 */3 ? * *") //every 3 hours
             .Build();
         
         await scheduler.ScheduleJob(job, trigger);
+    }
+
+    public static async Task ScheduleYtdlpUpdateJob()
+    {
+        var scheduler = await GetScheduler();
+        IJobDetail job = JobBuilder.Create<YtDlpUpdateJob>()
+            .WithIdentity("YtDlpUpdateJob", "updateGroup")
+            .Build();
+        
+        ITrigger trigger = TriggerBuilder.Create()
+            .WithIdentity("YtDlpUpdateTrigger", "updateGroup")
+            .WithCronSchedule("0 0 */12 ? * *") //every 12 hours
+            .Build();
     }
 }

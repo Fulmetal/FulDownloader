@@ -44,8 +44,8 @@
         try
         {
             Ytdl = new YoutubeDL();
-            Ytdl.YoutubeDLPath = Globals.BinFolder + "yt-dlp"; //Globals.YtdlPath;
-            Ytdl.FFmpegPath = Globals.BinFolder + "ffmpeg"; //Globals.FfmpegPath;
+            Ytdl.YoutubeDLPath = Globals.YtDlpPath;
+            Ytdl.FFmpegPath = Globals.FfmpegPath;
             Ytdl.OutputFolder = Globals.DownloadPath;
         }
         catch (Exception e)
@@ -132,7 +132,7 @@
                 await DownloadAndProcessVideo(formatModel);
                 return;
             }
-
+            
             var analysis = await FFProbe.AnalyseAsync(VideoDataResult.VideoFilePath);
             var resolution = $"{analysis.VideoStreams[0]?.Width}x{analysis.VideoStreams[0]?.Height}";
             if (resolution == formatModel.Resolution)
