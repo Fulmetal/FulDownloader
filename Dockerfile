@@ -12,7 +12,7 @@ RUN dotnet restore -a $TARGETARCH
 
 # Copy source code and publish app
 COPY FulDownloader/. .
-RUN dotnet publish --no-restore -a $TARGETARCH -o /app
+RUN dotnet publish -c Release -o /app -a $TARGETARCH 
 
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
@@ -22,9 +22,17 @@ EXPOSE 8080
 WORKDIR /app
 
 USER root
-RUN apk update && apk upgrade && apk add python3 wget ffmpeg
-RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp
-RUN chmod a+rx /bin/yt-dlp
+RUN apk update \
+    && apk upgrade \
+    && apk add python3 wget ffmpeg \
+    && wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp \
+    && chmod a+rx /bin/yt-dlp \
+    && rm -rf /var/cache/apk/*
+
+#RUN apk update && apk upgrade && apk add  python3 wget ffmpeg
+#RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp
+#RUN chmod a+rx /bin/yt-dlp
+
 USER $APP_UID
 
 COPY --from=build /app .
