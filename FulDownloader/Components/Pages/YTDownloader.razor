@@ -29,6 +29,7 @@
     [Inject] IDownloadService DownloadService { get; set; } = null!;
     [Inject] ISnackbar Snackbar { get; set; } = null!;
     [Inject] IJSRuntime JsRuntime { get; set; } = null!;
+    [Inject] ILogger<YTDownloader> _logger { get; set; } = null!;
 
     public string YoutubeUrl { get; set; } = string.Empty;
     bool UrlValid { get; set; }
@@ -44,8 +45,8 @@
         try
         {
             Ytdl = new YoutubeDL();
-            Ytdl.YoutubeDLPath = Globals.BinFolder + "yt-dlp"; //Globals.YtdlPath;
-            Ytdl.FFmpegPath = Globals.BinFolder + "ffmpeg"; //Globals.FfmpegPath;
+            Ytdl.YoutubeDLPath = Globals.YtDlpPath;
+            Ytdl.FFmpegPath = Globals.FfmpegPath;
             Ytdl.OutputFolder = Globals.DownloadPath;
         }
         catch (Exception e)
@@ -132,7 +133,7 @@
                 await DownloadAndProcessVideo(formatModel);
                 return;
             }
-
+            
             var analysis = await FFProbe.AnalyseAsync(VideoDataResult.VideoFilePath);
             var resolution = $"{analysis.VideoStreams[0]?.Width}x{analysis.VideoStreams[0]?.Height}";
             if (resolution == formatModel.Resolution)
@@ -148,10 +149,7 @@
         }
         catch (Exception e)
         {
-            JsRuntime.InvokeVoidAsync("consoleWriteLine", e.Message);
-            JsRuntime.InvokeVoidAsync("consoleWriteLine", e.StackTrace);
-            Console.WriteLine(e);
-            throw;
+            _logger.LogError(e, "Error downloading video");
         }
         finally
         {
@@ -210,8 +208,7 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-            JsRuntime.InvokeVoidAsync("consoleWriteLine", ex.Message);
-            JsRuntime.InvokeVoidAsync("consoleWriteLine", ex.StackTrace);
+            _logger.LogError(ex, "Error occurred during video download and processing");
         }
     }   
 }

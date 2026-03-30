@@ -1,11 +1,10 @@
-using System.Net;
 using Quartz;
 
 namespace FulDownloader.Jobs;
 
-public class VideoCleanupJob : IJob
+public class VideoCleanupJob(ILogger<VideoCleanupJob> logger) : IJob
 {
-    public Task Execute(IJobExecutionContext context)
+    public async Task Execute(IJobExecutionContext context)
     {
         var files = Directory.GetFiles(Globals.DownloadPath);
         foreach (var filePath in files)
@@ -15,6 +14,6 @@ public class VideoCleanupJob : IJob
                 File.Delete(filePath);
             }
         }
-        return Task.CompletedTask;
+        logger.LogInformation($"Video cleanup job finished: removed {files.Length} files.");
     }
 }
