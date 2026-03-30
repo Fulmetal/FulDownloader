@@ -38,8 +38,7 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(ytdlpUpdateJobKey)
         .WithIdentity("YtDlpUpdateTrigger")
-        //.WithCronSchedule("0 0 */12 ? * *")); //every 12 hours
-        .WithCronSchedule("0 * * ? * *")); //every minute
+        .WithCronSchedule("0 0 */12 ? * *")); //every 12 hours
 });
 
 builder.Services.AddQuartzHostedService(o =>
