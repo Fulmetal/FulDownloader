@@ -14,6 +14,6 @@ public class VideoCleanupJob(ILogger<VideoCleanupJob> logger) : IJob
                 File.Delete(filePath);
             }
         }
-        logger.LogInformation("Video cleanup job finished");
+        logger.LogInformation($"Video cleanup job finished: removed {files.Length} files.");
     }
 }
