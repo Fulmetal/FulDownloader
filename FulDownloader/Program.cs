@@ -2,9 +2,9 @@ using FulDownloader;
 using FulDownloader.Components;
 using MudBlazor.Services;
 using FFMpegCore;
+using FulDownloader.Jobs;
 using FulDownloader.Services;
-using Microsoft.AspNetCore.Components;
-
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,13 +12,38 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddLogging();
 
 builder.Services.AddControllers();
 
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IDownloadService, DownloadService>();
 
-await Scheduler.Init();
+builder.Services.AddQuartz(q =>
+{
+    q.UseSimpleTypeLoader();
+    q.UseInMemoryStore();
+    q.UseDefaultThreadPool(tp => tp.MaxConcurrency = 3);
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    
+    var vcJobKey = new JobKey("VideoCleanupJob");
+    q.AddJob<VideoCleanupJob>(opts => opts.WithIdentity(vcJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(vcJobKey)
+        .WithIdentity("VideoCleanupTrigger")
+        .WithCronSchedule("0 0 */3 ? * *")); //every 3 hours
+    
+    var ytdlpUpdateJobKey = new JobKey("YtDlpUpdateJob");
+    q.AddJob<YtDlpUpdateJob>(opts => opts.WithIdentity(ytdlpUpdateJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(ytdlpUpdateJobKey)
+        .WithIdentity("YtDlpUpdateTrigger")
+        //.WithCronSchedule("0 0 */12 ? * *")); //every 12 hours
+        .WithCronSchedule("0 * * ? * *")); //every minute
+});
+
+builder.Services.AddQuartzHostedService(o =>
+    o.WaitForJobsToComplete = true);
 
 var app = builder.Build();
 

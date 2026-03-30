@@ -29,6 +29,7 @@
     [Inject] IDownloadService DownloadService { get; set; } = null!;
     [Inject] ISnackbar Snackbar { get; set; } = null!;
     [Inject] IJSRuntime JsRuntime { get; set; } = null!;
+    [Inject] ILogger<YTDownloader> _logger { get; set; } = null!;
 
     public string YoutubeUrl { get; set; } = string.Empty;
     bool UrlValid { get; set; }
@@ -47,6 +48,9 @@
             Ytdl.YoutubeDLPath = Globals.YtDlpPath;
             Ytdl.FFmpegPath = Globals.FfmpegPath;
             Ytdl.OutputFolder = Globals.DownloadPath;
+            
+            _logger.LogInformation("initialized");
+            _logger.LogError("error initialized");
         }
         catch (Exception e)
         {

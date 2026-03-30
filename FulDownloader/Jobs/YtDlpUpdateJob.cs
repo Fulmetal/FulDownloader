@@ -3,15 +3,16 @@ using YoutubeDLSharp;
 
 namespace FulDownloader.Jobs;
 
-public class YtDlpUpdateJob : IJob
+public class YtDlpUpdateJob(ILogger<VideoCleanupJob> logger) : IJob
 {
     private YoutubeDL? Ytdl { get; set; }
     
-    public Task Execute(IJobExecutionContext context)
+    public async Task Execute(IJobExecutionContext context)
     {
         Ytdl = new YoutubeDL();
         Ytdl.YoutubeDLPath = Globals.YtDlpPath;
-        Ytdl.RunUpdate();
-        return Task.CompletedTask;
+        var str = await Ytdl.RunUpdate();
+        
+        logger.LogInformation($"YtDlp update job finished: {str}");
     }
 }
