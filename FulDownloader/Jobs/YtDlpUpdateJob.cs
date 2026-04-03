@@ -9,8 +9,10 @@ public class YtDlpUpdateJob(ILogger<VideoCleanupJob> logger) : IJob
     
     public async Task Execute(IJobExecutionContext context)
     {
-        Ytdl = new YoutubeDL();
-        Ytdl.YoutubeDLPath = Globals.YtDlpPath;
+        Ytdl = new YoutubeDL
+        {
+            YoutubeDLPath = Globals.YtDlpPath
+        };
         var str = await Ytdl.RunUpdate();
         
         logger.LogInformation($"YtDlp update job finished: {str}");

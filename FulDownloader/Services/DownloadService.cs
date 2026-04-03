@@ -19,9 +19,6 @@ public class DownloadService : IDownloadService
             {
                 throw new FileNotFoundException($"File {fileName} not found");
             }
-
-            var fileBytes = await File.ReadAllBytesAsync(filePath);
-            var base64 = Convert.ToBase64String(fileBytes);
             
             await _jsRuntime.InvokeVoidAsync("downloadLargeFile", fileName);
         }

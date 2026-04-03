@@ -17,8 +17,11 @@ public class DownloadController : Controller
         if (!System.IO.File.Exists(filePath))
             return NotFound("File not found");
 
+        // Validate file exists and is accessible before streaming
+        using var stream = System.IO.File.OpenRead(filePath);
+    
         var contentType = "application/octet-stream";
 
-        return PhysicalFile(filePath, contentType, filename, enableRangeProcessing: true);
+        return PhysicalFile(filePath, contentType, filename, enableRangeProcessing: false);
     }
 }
