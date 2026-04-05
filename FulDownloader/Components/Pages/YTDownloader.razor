@@ -182,7 +182,7 @@
                 JsRuntime.InvokeVoidAsync("consoleWriteLine", vResult);
                 ProgBar.ResetProgress();
                 ProgBar.UpdateTitle("Downloading Audio");
-                var aResult = await Ytdl.RunAudioDownload(YoutubeUrl, AudioConversionFormat.Mp3, progress: progress, ct: cts.Token);
+                var aResult = await Ytdl.RunAudioDownload(YoutubeUrl, progress: progress, ct: cts.Token);
 
                 ProgBar.ResetProgress();
                 ProgBar.UpdateTitle("Processing");
