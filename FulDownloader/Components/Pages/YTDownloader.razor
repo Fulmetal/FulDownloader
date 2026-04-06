@@ -29,7 +29,7 @@
     [Inject] IDownloadService DownloadService { get; set; } = null!;
     [Inject] ISnackbar Snackbar { get; set; } = null!;
     [Inject] IJSRuntime JsRuntime { get; set; } = null!;
-    [Inject] ILogger<YTDownloader> _logger { get; set; } = null!;
+    [Inject] ILogger<YTDownloader> Logger { get; set; } = null!;
 
     public string YoutubeUrl { get; set; } = string.Empty;
     bool UrlValid { get; set; }
@@ -44,10 +44,12 @@
     {
         try
         {
-            Ytdl = new YoutubeDL();
-            Ytdl.YoutubeDLPath = Globals.YtDlpPath;
-            Ytdl.FFmpegPath = Globals.FfmpegPath;
-            Ytdl.OutputFolder = Globals.DownloadPath;
+            Ytdl = new YoutubeDL
+            {
+                YoutubeDLPath = Globals.YtDlpPath,
+                FFmpegPath = Globals.FfmpegPath,
+                OutputFolder = Globals.DownloadPath
+            };
         }
         catch (Exception e)
         {
@@ -59,7 +61,7 @@
     private string? ValidateUrl(string arg)
     {
         VideoDataResult = null;
-        string errorMessage = "Invalid YouTube URL";
+        const string errorMessage = "Invalid YouTube URL";
         if (string.IsNullOrWhiteSpace(YoutubeUrl) ||
             !Uri.TryCreate(YoutubeUrl, UriKind.Absolute, out var uri) ||
             (!uri.Host.Contains("youtube.com") && !uri.Host.Contains("youtu.be")))
@@ -86,18 +88,16 @@
                     throw new NullReferenceException("Ytdl was not instantiated.");
                 
                 var result = await Ytdl.RunVideoDataFetch(YoutubeUrl);
-                var videoDataList = new List<VideoFormatModel>();
-                foreach (var format in result.Data.Formats.Where(x => x.Extension == "mp4" && x.VideoCodec.StartsWith("av01")))
-                {
-                    videoDataList.Add(new VideoFormatModel()
+                var videoDataList = result.Data.Formats.Where(x => x.Extension == "mp4" && x.VideoCodec.StartsWith("av01"))
+                    .Select(format => new VideoFormatModel()
                     {
                         Resolution = format.Resolution,
                         FrameRate = format.FrameRate,
                         FormatNote = format.FormatNote,
                         FormatCode = format.FormatId,
                         Uri = format.Url
-                    });
-                }
+                    })
+                    .ToList();
 
                 VideoDataResult = new VideoDataModel
                 {
@@ -110,8 +110,7 @@
             catch (Exception e)
             {
                 Snackbar.Add($"Error: {e.Message}", Severity.Error);
-                JsRuntime.InvokeVoidAsync("consoleWriteLine", e.Message);
-                JsRuntime.InvokeVoidAsync("consoleWriteLine", e.StackTrace);
+                Logger.LogError(e, "Error retrieving video data.");
             }
             finally
             {
@@ -122,6 +121,12 @@
 
     async Task GetVideo(VideoFormatModel formatModel)
     {
+        if (VideoDataResult == null)
+        {
+            Logger.LogWarning("No video data loaded.");
+            return;
+        }
+        
         Downloading = true;
         ProgBar.ResetProgress();
         StateHasChanged();
@@ -138,8 +143,7 @@
             var resolution = $"{analysis.VideoStreams[0]?.Width}x{analysis.VideoStreams[0]?.Height}";
             if (resolution == formatModel.Resolution)
             {
-                ProgBar.Title = "Fetching Video";
-                StateHasChanged();
+                ProgBar.UpdateTitle("Fetching Video");
                 await DownloadService.DownloadMp4Async(VideoDataResult.VideoFilename, VideoDataResult.VideoFilePath);
             }
             else
@@ -149,7 +153,8 @@
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error downloading video");
+            Snackbar.Add($"Error: {e.Message}", Severity.Error);
+            Logger.LogError(e, "Error downloading video");
         }
         finally
         {
@@ -162,6 +167,12 @@
     {
         try
         {
+            if (VideoDataResult == null)
+            {
+                Logger.LogWarning("No video data loaded.");
+                return;
+            }
+            
             if (Ytdl != null)
             {
                 var progress = new Progress<DownloadProgress>(p => ProgBar.UpdateProgress(p.Progress * 100));
@@ -174,12 +185,11 @@
                     });
                 });
                 var cts = new CancellationTokenSource();
-
                 
                 ProgBar.UpdateTitle("Downloading Video");
                 var options = new OptionSet() { Format = formatModel.FormatCode };
                 var vResult = await Ytdl.RunVideoDownload(YoutubeUrl, overrideOptions: options, progress: progress, ct: cts.Token);
-                JsRuntime.InvokeVoidAsync("consoleWriteLine", vResult);
+                await JsRuntime.InvokeVoidAsync("consoleWriteLine", vResult);
                 ProgBar.ResetProgress();
                 ProgBar.UpdateTitle("Downloading Audio");
                 var aResult = await Ytdl.RunAudioDownload(YoutubeUrl, progress: progress, ct: cts.Token);
@@ -188,7 +198,7 @@
                 ProgBar.UpdateTitle("Processing");
                 await FFMpegArguments.FromFileInput(vResult.Data)
                     .AddFileInput(aResult.Data)
-                    .OutputToFile(VideoDataResult.VideoFilePath, true, options => options
+                    .OutputToFile(VideoDataResult.VideoFilePath, true, o => o
                         .CopyChannel()
                         .ForceFormat(VideoType.Mp4)
                         .WithFastStart()
@@ -200,7 +210,7 @@
                 File.Delete(vResult.Data);
                 File.Delete(aResult.Data);
 
-                ProgBar.Title = "Fetching Video";
+                ProgBar.UpdateTitle("Fetching Video");
                 StateHasChanged();
                 await DownloadService.DownloadMp4Async(VideoDataResult.VideoFilename, VideoDataResult.VideoFilePath);
             }
@@ -208,7 +218,7 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-            _logger.LogError(ex, "Error occurred during video download and processing");
+            Logger.LogError(ex, "Error occurred during video download and processing");
         }
     }   
 }

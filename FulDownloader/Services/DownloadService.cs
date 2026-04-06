@@ -13,18 +13,11 @@ public class DownloadService : IDownloadService
 
     public async Task DownloadMp4Async(string fileName, string filePath)
     {
-        try
+        if (!File.Exists(filePath))
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"File {fileName} not found");
-            }
-            
-            await _jsRuntime.InvokeVoidAsync("downloadLargeFile", fileName);
+            throw new FileNotFoundException($"File {fileName} not found");
         }
-        catch (Exception ex)
-        {
-            throw;
-        }
+        
+        await _jsRuntime.InvokeVoidAsync("downloadLargeFile", fileName);
     }
 }

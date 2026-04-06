@@ -24,7 +24,6 @@ builder.Services.AddQuartz(q =>
     q.UseSimpleTypeLoader();
     q.UseInMemoryStore();
     q.UseDefaultThreadPool(tp => tp.MaxConcurrency = 3);
-    q.UseMicrosoftDependencyInjectionJobFactory();
     
     var vcJobKey = new JobKey("VideoCleanupJob");
     q.AddJob<VideoCleanupJob>(opts => opts.WithIdentity(vcJobKey));

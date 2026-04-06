@@ -1,10 +1,10 @@
 
 
-<MudText Style="@(Visible ? "display: block;" : "display: none;")" Typo="Typo.body1">@Title</MudText>
+<MudText Style="@(Visible ? "display: block;" : "display: none;")" Typo="Typo.body1">@Text</MudText>
 <MudProgressLinear Style="@(Visible ? "display: block;" : "display: none;")" Color="Color.Primary" Value="@DownloadProgress" Class="my-7" />
 
 @code {
-    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Text { get; set; } = string.Empty;
     [Parameter] public bool Visible { get; set; } = true;
 
     double DownloadProgress { get; set; }
@@ -15,16 +15,16 @@
         StateHasChanged();
     }
 
-    public async Task UpdateProgress(double value)
-    { 
+    public void UpdateProgress(double value)
+    {
         if (value > 0)
             DownloadProgress = value; 
         StateHasChanged();
     }
 
-    public async Task UpdateTitle(string title, bool updateState = true)
+    public void UpdateTitle(string text, bool updateState = true)
     {
-        Title = title;
+        Text = text;
         if (updateState)
             StateHasChanged();
     }
