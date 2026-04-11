@@ -1,0 +1,84 @@
+@page "/Logs"
+@using Infrastructure
+@using Microsoft.EntityFrameworkCore
+@using Serilog.Events
+
+<h2>Logs</h2>
+<br/>
+
+<MudSelect T="string" Placeholder="Log Level" MultiSelection="true" SelectAll="true" SelectAllText="Show all" Adornment="Adornment.End" FullWidth="false">
+    <MudSelectItem Value="@("Information")">
+        <MudStack AlignItems="AlignItems.Center" Row="true">
+            <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Info" Color="Color.Info"/>
+            <MudText>Information</MudText>
+        </MudStack>
+    </MudSelectItem>
+    <MudSelectItem Value="@("Waring")">
+        <MudStack AlignItems="AlignItems.Center" Row="true">
+            <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Warning" Color="Color.Warning"/>
+            <MudText>Waring</MudText>
+        </MudStack>
+    </MudSelectItem>
+    <MudSelectItem Value="@("Error")">
+        <MudStack AlignItems="AlignItems.Center" Row="true">
+            <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Error" Color="Color.Error"/>
+            <MudText>Error</MudText>
+        </MudStack>
+    </MudSelectItem>
+    <MudSelectItem Value="@("Fatal")">
+        <MudStack AlignItems="AlignItems.Center" Row="true">
+            <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.WebAssetOff" Color="Color.Tertiary"/>
+            <MudText>Fatal</MudText>
+        </MudStack>
+    </MudSelectItem>
+</MudSelect>
+<br/>
+
+<MudTable Items="LogsList" Hover="true" Loading="_loading" LoadingProgressColor="Color.Primary">
+    <HeaderContent>
+        <MudTh>Level</MudTh>
+        <MudTh>Timestamp</MudTh>
+        <MudTh>Message</MudTh>
+        <MudTh>Exception</MudTh>
+        <MudTh>Properties</MudTh>
+    </HeaderContent> 
+    <RowTemplate>
+        <MudTd DataLabel="Level">
+            @if (context.Level == "Information")
+            {
+                <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Info" Color="Color.Info"/>
+            }
+            @if (context.Level == "Warning")
+            {
+                <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Warning" Color="Color.Warning"/>
+            }
+            @if (context.Level == "Error")
+            {
+                <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Error" Color="Color.Error"/>
+            }
+            @if (context.Level == "Fatal")
+            {
+                <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.WebAssetOff" Color="Color.Tertiary"/>
+            }
+        </MudTd>
+        <MudTd DataLabel="TimeStamp">@context.TimeStamp</MudTd>
+        <MudTd DataLabel="RenderedMessage">@context.RenderedMessage</MudTd>
+        <MudTd DataLabel="Exception">@context.Exception</MudTd>
+        <MudTd DataLabel="Properties">@context.Properties</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Inject] ApplicationLogsDbContext LogsDbContext { get; set; } = null!;
+
+    private List<LogDataModel> LogsList { get; set; } = new();
+    private bool _loading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        LogsList = await LogsDbContext.Logs.OrderByDescending(x => x.TimeStamp).ToListAsync();
+        _loading = false;
+    }
+    
+}
