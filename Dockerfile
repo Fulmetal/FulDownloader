@@ -7,12 +7,15 @@ WORKDIR /source
 USER root
 
 # Copy project file and restore as distinct layers
-COPY FulDownloader/*.csproj .
-RUN dotnet restore -a $TARGETARCH
+COPY FulDownloader/*.csproj ./FulDownloader/
+COPY Infrastructure/*.csproj ./Infrastructure/
+RUN dotnet restore ./FulDownloader/FulDownloader.csproj -a $TARGETARCH 
 
 # Copy source code and publish app
-COPY FulDownloader/. .
-RUN dotnet publish -c Release -o /app -a $TARGETARCH 
+COPY FulDownloader/. ./FulDownloader/
+COPY Infrastructure/. ./Infrastructure/
+WORKDIR /source/FulDownloader
+RUN dotnet publish -c Release -o /app -a $TARGETARCH
 
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
@@ -27,7 +30,8 @@ RUN apk update \
     && apk add python3 wget ffmpeg \
     && wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp \
     && chmod a+rx /bin/yt-dlp \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/cache/apk/* \
+    && chown -R $APP_UID:$APP_UID /app
 
 #RUN apk update && apk upgrade && apk add  python3 wget ffmpeg
 #RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp

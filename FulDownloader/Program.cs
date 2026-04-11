@@ -5,14 +5,15 @@ using FFMpegCore;
 using FulDownloader.Jobs;
 using FulDownloader.Services;
 using Quartz;
+using FulDownloader.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSerilogLogging(builder.Configuration, builder.Host);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddLogging();
 
 builder.Services.AddControllers();
 

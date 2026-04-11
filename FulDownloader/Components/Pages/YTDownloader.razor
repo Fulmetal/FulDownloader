@@ -42,20 +42,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
             Ytdl = new YoutubeDL
             {
                 YoutubeDLPath = Globals.YtDlpPath,
                 FFmpegPath = Globals.FfmpegPath,
                 OutputFolder = Globals.DownloadPath
             };
-        }
-        catch (Exception e)
-        {
-            Snackbar.Add(e.Message, Severity.Error);
-            throw;
-        }
     }
 
     private string? ValidateUrl(string arg)
@@ -78,10 +70,11 @@
 
     async Task GetVideoData()
     {
+        throw new Exception("test exception");
         if (UrlValid)
         {
             Busy = true;
-            
+
             try
             {
                 if (Ytdl == null)
