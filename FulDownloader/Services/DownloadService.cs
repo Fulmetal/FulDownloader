@@ -1,6 +1,7 @@
 namespace FulDownloader.Services;
 
 using Microsoft.JSInterop;
+using Interfaces;
 
 public class DownloadService : IDownloadService
 {

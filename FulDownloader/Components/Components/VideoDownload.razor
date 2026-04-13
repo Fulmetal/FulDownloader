@@ -4,9 +4,7 @@
 {
     <MudStack>
         <MudText Typo="Typo.h4">@VideoData.VideoName</MudText>
-
         <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Start" Wrap="Wrap.Wrap" >
-            
             <MudImage Src="@VideoData.VideoThumbnail" ObjectFit="ObjectFit.Contain" Width="800" Fluid="true" Elevation="0" Class="rounded-lg"/>
             <MudDataGrid T="VideoFormatModel" Items="@VideoData.VideoFormats" Dense="true" >
                 <Columns>
@@ -23,7 +21,6 @@
                     </TemplateColumn>
                 </Columns>
             </MudDataGrid>
-            
         </MudStack>
     </MudStack>
 }
