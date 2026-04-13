@@ -15,6 +15,8 @@ builder.Services.AddSerilogLogging(builder.Configuration, builder.Host);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddAntiforgery();
+builder.Services.AddDataProtection();
 
 builder.Services.AddControllers();
 
