@@ -7,13 +7,16 @@
 @using FFMpegCore.Enums
 @using Models
 @using FulDownloader.Extensions
-@using FulDownloader.Services
+@using FulDownloader.Services.Interfaces
 
 <h2>YouTube Downloader</h2>
 <br/>
 <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
-    <MudTextField @bind-Value="YoutubeUrl" Label="Youtube URL" Variant="Variant.Outlined" FullWidth="true" Disabled="@(Busy || Downloading)"
-                  Validation="@(new Func<string, string?>(ValidateUrl))" OnDebounceIntervalElapsed="GetVideoData" DebounceInterval="400"></MudTextField>
+    <MudStack Row="true" AlignItems="AlignItems.Start" Style="width: 100%">
+    <MudTextField @bind-Value="YoutubeUrl" Label="Youtube URL" Variant="Variant.Outlined" FullWidth="false" Disabled="@(Busy || Downloading)"
+                  Validation="@(new Func<string, string?>(ValidateUrl))" DebounceInterval="400"></MudTextField>
+    <MudButton OnClick="GetVideoData" ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Filled" Disabled="!UrlValid" Class="mt-4">Get data</MudButton>
+    </MudStack>
     <br/>
     @if (Busy)
     {
@@ -22,14 +25,14 @@
         </MudProgressCircular>
     }
     <VideoDownload Disabled="Downloading" VideoData="VideoDataResult" VideoFormatSelected="GetVideo"></VideoDownload>
-    <ProgressBar @ref="ProgBar" Visible="Downloading" ></ProgressBar>
+    <ProgressBar @ref="ProgBar" Visible="Downloading"></ProgressBar>
 </MudStack>
 
 @code {
     [Inject] IDownloadService DownloadService { get; set; } = null!;
     [Inject] ISnackbar Snackbar { get; set; } = null!;
     [Inject] IJSRuntime JsRuntime { get; set; } = null!;
-    [Inject] ILogger<YTDownloader> Logger { get; set; } = null!;
+    [Inject] ILoggerService<YTDownloader> Logger { get; set; } = null!;
 
     public string YoutubeUrl { get; set; } = string.Empty;
     bool UrlValid { get; set; }
@@ -70,11 +73,9 @@
 
     async Task GetVideoData()
     {
-        throw new Exception("test exception");
         if (UrlValid)
         {
             Busy = true;
-
             try
             {
                 if (Ytdl == null)
@@ -102,8 +103,7 @@
             }
             catch (Exception e)
             {
-                Snackbar.Add($"Error: {e.Message}", Severity.Error);
-                Logger.LogError(e, "Error retrieving video data.");
+                Logger.LogError("Error retrieving video data.", e);
             }
             finally
             {
@@ -143,11 +143,12 @@
             {
                 await DownloadAndProcessVideo(formatModel);
             }
+            
+            Logger.LogSuccess("Video download complete.");
         }
         catch (Exception e)
         {
-            Snackbar.Add($"Error: {e.Message}", Severity.Error);
-            Logger.LogError(e, "Error downloading video");
+            Logger.LogError("Error downloading video", e);
         }
         finally
         {
@@ -208,10 +209,9 @@
                 await DownloadService.DownloadMp4Async(VideoDataResult.VideoFilename, VideoDataResult.VideoFilePath);
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-            Logger.LogError(ex, "Error occurred during video download and processing");
+            Logger.LogError("Error occurred during video download and processing", e);
         }
     }   
 }

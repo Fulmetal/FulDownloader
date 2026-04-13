@@ -1,4 +1,4 @@
-namespace FulDownloader.Services;
+namespace FulDownloader.Services.Interfaces;
 
 public interface IDownloadService
 {

@@ -6,14 +6,14 @@
 <h2>Logs</h2>
 <br/>
 
-<MudSelect T="string" Placeholder="Log Level" MultiSelection="true" SelectAll="true" SelectAllText="Show all" Adornment="Adornment.End" FullWidth="false">
+<MudSelect T="string" SelectedValues="_options" SelectedValuesChanged="(x) => LogLevelsChanged(x)" Label="Log Level" Placeholder="Select log level" MultiSelection="true" SelectAll="true" SelectAllText="Show all" Adornment="Adornment.End" FullWidth="false">
     <MudSelectItem Value="@("Information")">
         <MudStack AlignItems="AlignItems.Center" Row="true">
             <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Info" Color="Color.Info"/>
             <MudText>Information</MudText>
         </MudStack>
     </MudSelectItem>
-    <MudSelectItem Value="@("Waring")">
+    <MudSelectItem Value="@("Warning")">
         <MudStack AlignItems="AlignItems.Center" Row="true">
             <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Warning" Color="Color.Warning"/>
             <MudText>Waring</MudText>
@@ -34,14 +34,14 @@
 </MudSelect>
 <br/>
 
-<MudTable Items="LogsList" Hover="true" Loading="_loading" LoadingProgressColor="Color.Primary">
+<MudTable Items="LogsList" RowsPerPage="10" Hover="true" Loading="_loading" LoadingProgressColor="Color.Primary">
     <HeaderContent>
         <MudTh>Level</MudTh>
         <MudTh>Timestamp</MudTh>
         <MudTh>Message</MudTh>
         <MudTh>Exception</MudTh>
         <MudTh>Properties</MudTh>
-    </HeaderContent> 
+    </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Level">
             @if (context.Level == "Information")
@@ -66,19 +66,48 @@
         <MudTd DataLabel="Exception">@context.Exception</MudTd>
         <MudTd DataLabel="Properties">@context.Properties</MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
 </MudTable>
 
 @code {
     [Inject] ApplicationLogsDbContext LogsDbContext { get; set; } = null!;
 
     private List<LogDataModel> LogsList { get; set; } = new();
+    private IReadOnlyCollection<string> _options = new List<string>()  {"Information", "Warning", "Error", "Fatal"};
     private bool _loading;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetLogs();
+        }
+    }
+
+    private async Task LogLevelsChanged(IReadOnlyCollection<string> values)
+    {
+        _options = values; 
+        await GetLogs();
+    }
+
+    private async Task GetLogs()
     {
         _loading = true;
-        LogsList = await LogsDbContext.Logs.OrderByDescending(x => x.TimeStamp).ToListAsync();
+        await InvokeAsync(StateHasChanged);
+        
+        LogsList = await LogsDbContext.Logs
+            .Where(x => x.Level != null && _options.Contains(x.Level))
+            .OrderByDescending(x => x.TimeStamp)
+            .ToListAsync();
+
+        foreach (var log in LogsList)
+        {
+            log.Properties = log.Properties?.Replace("{", "").Replace(";", "; ").Replace(",", ", "). Replace(":", " : ").Replace("}", "");
+        }
+        
         _loading = false;
+        await InvokeAsync(StateHasChanged);
     }
-    
 }

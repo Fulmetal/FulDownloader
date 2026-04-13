@@ -6,6 +6,7 @@ using FulDownloader.Jobs;
 using FulDownloader.Services;
 using Quartz;
 using FulDownloader.Extensions;
+using FulDownloader.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IDownloadService, DownloadService>();
+builder.Services.AddScoped(typeof(ILoggerService<>), typeof(LoggerService<>));
 
 builder.Services.AddQuartz(q =>
 {
