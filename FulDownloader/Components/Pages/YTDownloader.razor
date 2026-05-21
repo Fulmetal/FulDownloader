@@ -24,7 +24,10 @@
             <ChildContent>Getting data</ChildContent>
         </MudProgressCircular>
     }
-    <VideoDownload Disabled="Downloading" VideoData="VideoDataResult" VideoFormatSelected="GetVideo"></VideoDownload>
+    @if (VideoDataResult != null)
+    {
+        <VideoDownload Disabled="Downloading" VideoData="VideoDataResult" VideoFormatSelected="GetVideo"></VideoDownload>
+    }
     <ProgressBar @ref="ProgBar" Visible="Downloading"></ProgressBar>
 </MudStack>
 
