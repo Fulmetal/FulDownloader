@@ -8,6 +8,7 @@ using Quartz;
 using FulDownloader.Extensions;
 using FulDownloader.Services.Interfaces;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSerilogLogging(builder.Configuration, builder.Host);

@@ -81,8 +81,18 @@
                 if (Ytdl == null)
                     throw new NullReferenceException("Ytdl was not instantiated.");
                 
-                var result = await Ytdl.RunVideoDataFetch(YoutubeUrl);
-                var videoDataList = result.Data.Formats.Where(x => x.Extension == "mp4" && x.VideoCodec.StartsWith("av01"))
+                    var result = await Ytdl.RunVideoDataFetch(YoutubeUrl);
+                    if (result.Success == false)
+                    {
+                        Logger.LogWarning(string.Join("; ", result.ErrorOutput));
+                        return;
+                    }
+
+                    var videoDataList = result.Data.Formats.Where(x => 
+                        x.Extension == "mp4" 
+                        && 
+                       x.VideoCodec.StartsWith("av01")
+                    )
                     .Select(format => new VideoFormatModel()
                     {
                         Resolution = format.Resolution,

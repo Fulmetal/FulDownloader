@@ -27,15 +27,11 @@ WORKDIR /app
 USER root
 RUN apk update \
     && apk upgrade \
-    && apk add python3 wget ffmpeg \
+    && apk add python3 wget ffmpeg deno \
     && wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp \
     && chmod a+rx /bin/yt-dlp \
     && rm -rf /var/cache/apk/* \
     && chown -R $APP_UID:$APP_UID /app
-
-#RUN apk update && apk upgrade && apk add  python3 wget ffmpeg
-#RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp
-#RUN chmod a+rx /bin/yt-dlp
 
 USER $APP_UID
 

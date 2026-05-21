@@ -17,14 +17,14 @@ public class LoggerService<T> : ILoggerService<T>
     public void LogFatal(string message, Exception ex)
     {
         HandleMessageString(ref message, ex);
-        _logger.LogError(message, ex.Message);
+        _logger.LogError(message, ex);
         _snackbar.Add(message, Severity.Error);
     }
 
     public void LogError(string message, Exception ex)
     {
         HandleMessageString(ref message, ex);
-        _logger.LogError(message, ex.Message);
+        _logger.LogError(message, ex);
         _snackbar.Add(message, Severity.Error);
     }
 
