@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 namespace FulDownloader.Controllers;
 
@@ -12,16 +13,32 @@ public class DownloadController : Controller
         if (string.IsNullOrWhiteSpace(filename))
             return BadRequest("Filename is required");
 
-        var filePath = Path.Combine(Globals.DownloadPath, filename);
+        var sanitizedFilename = Path.GetFileName(filename);
 
-        if (!System.IO.File.Exists(filePath))
+        if (string.IsNullOrEmpty(sanitizedFilename))
+            return BadRequest("Invalid filename");
+
+        // Whitelist allowed characters in filenames (alphanumeric, dot, underscore, hyphen, space)
+        if (!Regex.IsMatch(sanitizedFilename, @"^[a-zA-Z0-9._ -]+$"))
+            return BadRequest("Filename contains invalid characters");
+
+        // Construct the file path and resolve to absolute path
+        var filePath = Path.Combine(Globals.DownloadPath, sanitizedFilename);
+        var safePath = Path.GetFullPath(filePath);
+        var downloadDirFullPath = Path.GetFullPath(Globals.DownloadPath);
+
+        // Final defense: ensure resolved path stays within download directory
+        if (!safePath.StartsWith(downloadDirFullPath, StringComparison.Ordinal))
+            return BadRequest("Invalid file path");
+
+        if (!System.IO.File.Exists(safePath))
             return NotFound("File not found");
 
         // Validate file exists and is accessible before streaming
-        using var stream = System.IO.File.OpenRead(filePath);
-    
+        using var stream = System.IO.File.OpenRead(safePath);
         var contentType = "application/octet-stream";
 
-        return PhysicalFile(filePath, contentType, filename, enableRangeProcessing: false);
+        // Return with the safe (canonical) path — ensures the file actually served is the one we validated
+        return PhysicalFile(safePath, contentType, sanitizedFilename, enableRangeProcessing: false);
     }
 }

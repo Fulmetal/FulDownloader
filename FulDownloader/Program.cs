@@ -11,7 +11,7 @@ using FulDownloader.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSerilogLogging(builder.Configuration, builder.Host);
+builder.Services.AddSerilogLogging(builder.Host);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

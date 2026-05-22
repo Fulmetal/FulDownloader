@@ -1,4 +1,3 @@
-using FulDownloader.Services;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -9,7 +8,7 @@ namespace FulDownloader.Extensions;
 
 public static class ServiceCollectionExtension
 {
-   public static IServiceCollection AddSerilogLogging(this IServiceCollection services, IConfigurationManager configuration, ConfigureHostBuilder host)
+   public static IServiceCollection AddSerilogLogging(this IServiceCollection services, ConfigureHostBuilder host)
    {
       var logDbPath = "/tmp/fuldownloader/logs.db";
       services.AddLogging();
@@ -17,7 +16,7 @@ public static class ServiceCollectionExtension
          .MinimumLevel.Information()
          .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
          .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)         .
-         WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+         WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Information)
          .WriteTo.SQLite(
             tableName: "Logs",
             sqliteDbPath: logDbPath,

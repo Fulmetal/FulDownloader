@@ -29,6 +29,8 @@ RUN apk update \
     && apk upgrade \
     && apk add python3 wget ffmpeg deno \
     && wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /bin/yt-dlp \
+    && wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/SHA2-256SUMS -O /tmp/SHA2-256SUMS \
+    && grep '  yt-dlp$' /tmp/SHA2-256SUMS | sed 's|  yt-dlp$|  /bin/yt-dlp|' | sha256sum -c - \
     && chmod a+rx /bin/yt-dlp \
     && rm -rf /var/cache/apk/* \
     && chown -R $APP_UID:$APP_UID /app
