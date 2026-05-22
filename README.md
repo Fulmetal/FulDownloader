@@ -1,24 +1,76 @@
-# Ful-Downloader
+# 🎬 FulDownloader
 
-A self hosted web application that allows you to download videos video hosting sites (currently only supports youtube)
+**Your videos. Your server. Your rules.**
 
-![image info](./fuldownloader_image.png)
+FulDownloader is a self-hosted web app that lets you download videos from YouTube — no ads, no telemetry, no tracking. Just you and your content.
 
-## Features
-- Download content quickly and easily.
-- User-friendly interface.
-- No popups, telemetry or tracking
-- Self hosted
-- Open source
+---
 
-## Docker image
-Docker image can be found on:
-https://hub.docker.com/r/fulmetal/fuldownloader
+## ✨ Why FulDownloader?
 
-## Usage
-1. Enter the video url into the textbox
-2. Select the quality and framerate you wish to download
-3. Save file to your computer
+| Feature | Benefit |
+|---------|---------|
+| 🏠 **Self-hosted** | Full control over your data and downloads |
+| 🔒 **Private** | No popups, no tracking, no telemetry — ever |
+| ⚡ **Fast** | Optimized downloads with yt-dlp under the hood |
+| 🎨 **Clean UI** | Simple, intuitive interface that just works |
+| 🐳 **Docker-ready** | One command to deploy, zero headaches |
+| 📂 **Flexible** | Pick your quality, framerate, and format |
 
-**Important Notice:**  
-Before using FulDownloader, please ensure that you have the permission of the content creators for the material you intend to download. This tool is designed to be used in accordance with fair use principles. Misuse of the tool may infringe on copyright laws and violate the rights of content owners. Always respect the rights of creators and ensure you are using this tool responsibly.
+---
+
+## 🚀 Quick Start
+
+### 1. Deploy with Docker
+
+```bash
+docker run -d \
+  --name fuldownloader \
+  -p 8080:8080 \
+  ghcr.io/fulmetal/fuldownloader:latest
+```
+
+### 2. Open Your Browser
+
+Navigate to `http://localhost:8080`
+
+### 3. Start Downloading
+
+1. Paste a YouTube URL
+2. Choose your quality and format
+3. Click download — done
+
+---
+
+## 📦 Docker Image
+
+| Source | Link |
+|--------|------|
+| **GitHub Container Registry** | [ghcr.io/fulmetal/fuldownloader](https://ghcr.io/fulmetal/fuldownloader) |
+| **Docker Hub** | [dockerhub.com/r/fulmetal/fuldownloader](https://hub.docker.com/r/fulmetal/fuldownloader) |
+
+---
+
+## 🛠️ Built With
+
+- **.NET 10** — Blazor Server for the web UI
+- **yt-dlp** — Powerful video extraction engine
+- **FFmpeg** — Format conversion and processing
+- **Serilog** — Structured logging
+- **Docker** — Containerized deployment
+
+---
+
+## ⚠️ Legal Notice
+
+Before using FulDownloader, please ensure that you have the permission of the content creators for the material you intend to download. This tool is designed to be used in accordance with fair use principles. Misuse may infringe on copyright laws and violate the rights of content owners. Always respect the rights of creators and ensure you are using this tool responsibly.
+
+---
+
+## 📄 License
+
+Open source and free to use.
+
+---
+
+*Made with ❤️ by [Fulmetal](https://github.com/Fulmetal)*
