@@ -1,76 +1,93 @@
-# 🎬 FulDownloader
+# FulDownloader
 
-**Your videos. Your server. Your rules.**
+**Download YouTube videos. On your server. Zero tracking. Zero ads. Zero excuses.**
 
-FulDownloader is a self-hosted web app that lets you download videos from YouTube — no ads, no telemetry, no tracking. Just you and your content.
+![FulDownloader](./fuldownloader_image.jpg)
+
+FulDownloader is a self-hosted web app that turns any YouTube link into a clean download. It runs on your pc or server. No telemetry. No middleman. No ads or popups.
 
 ---
 
-## ✨ Why FulDownloader?
+## ✨ What can it do?
 
-| Feature | Benefit |
-|---------|---------|
-| 🏠 **Self-hosted** | Full control over your data and downloads |
-| 🔒 **Private** | No popups, no tracking, no telemetry — ever |
-| ⚡ **Fast** | Optimized downloads with yt-dlp under the hood |
-| 🎨 **Clean UI** | Simple, intuitive interface that just works |
-| 🐳 **Docker-ready** | One command to deploy, zero headaches |
-| 📂 **Flexible** | Pick your quality, framerate, and format |
+- 🎥 **Download videos** — any public YouTube video, any quality your hardware supports
+- 📊 **Choose your quality** — depending on the video, pick from 144p to 4K
+
+---
+
+## ⚙️ How it works
+
+```
+              You paste a URL
+                     │
+                     ▼
+         Pick your format & quality
+                     │
+                     ▼
+               Wait for magic
+                     │
+                     ▼
+         Choose download location
+                     │
+                     ▼
+                   Done
+```
+
+That's it. No more broken websites with popups or paywalls. Everything runs locally on your server.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Deploy with Docker
+### Docker (recommended)
 
 ```bash
 docker run -d \
   --name fuldownloader \
   -p 8080:8080 \
+  -v ~/fuldownloader/downloads:/app/downloads \
   ghcr.io/fulmetal/fuldownloader:latest
 ```
 
-### 2. Open Your Browser
+Open `http://localhost:8080` in your browser. Paste a link. Hit download.
 
-Navigate to `http://localhost:8080`
+### From source
 
-### 3. Start Downloading
-
-1. Paste a YouTube URL
-2. Choose your quality and format
-3. Click download — done
-
----
-
-## 📦 Docker Image
-
-| Source | Link |
-|--------|------|
-| **GitHub Container Registry** | [ghcr.io/fulmetal/fuldownloader](https://ghcr.io/fulmetal/fuldownloader) |
-| **Docker Hub** | [dockerhub.com/r/fulmetal/fuldownloader](https://hub.docker.com/r/fulmetal/fuldownloader) |
+```bash
+git clone https://github.com/Fulmetal/FulDownloader.git
+cd FulDownloader
+dotnet restore
+dotnet run --project FulDownloader
+```
 
 ---
 
-## 🛠️ Built With
+## ❓ FAQ
 
-- **.NET 10** — Blazor Server for the web UI
-- **yt-dlp** — Powerful video extraction engine
-- **FFmpeg** — Format conversion and processing
-- **Serilog** — Structured logging
-- **Docker** — Containerized deployment
+**Do I need a YouTube Premium account?**
+No. FulDownloader works with any public video.
+
+**Can I download playlists?**
+This will be a future feature.
+
+**What about other sites?**
+Currently only implemented for YouTube, but support for more platforms is on the roadmap.
+
+**How do I update?**
+`docker pull ghcr.io/fulmetal/fuldownloader:latest && docker restart fuldownloader`
 
 ---
 
-## ⚠️ Legal Notice
+## ⚠️ Legal stuff
 
-Before using FulDownloader, please ensure that you have the permission of the content creators for the material you intend to download. This tool is designed to be used in accordance with fair use principles. Misuse may infringe on copyright laws and violate the rights of content owners. Always respect the rights of creators and ensure you are using this tool responsibly.
+FulDownloader is a tool. How you use it is on you. Please only download content you have permission to copy — respect creators, respect copyright, respect the law.
 
 ---
 
 ## 📄 License
 
-Open source and free to use.
+GNU GPL v3. You can use, modify, and distribute it — but any distributed derivative must also be open source.
 
 ---
 
-*Made with ❤️ by [Fulmetal](https://github.com/Fulmetal)*
+*Built by [Fulmetal](https://github.com/Fulmetal). No telemetry. Ever.*
