@@ -7,15 +7,16 @@
         <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+        <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="FFMpegCore" Version="5.4.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
-      <PackageReference Include="MudBlazor" Version="9.3.0" />
-      <PackageReference Include="Quartz" Version="3.18.0" />
-      <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.18.0" />
-      <PackageReference Include="Quartz.Extensions.Hosting" Version="3.18.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.8" />
+      <PackageReference Include="MudBlazor" Version="9.5.0" />
+      <PackageReference Include="Quartz" Version="3.18.1" />
+      <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.18.1" />
+      <PackageReference Include="Quartz.Extensions.Hosting" Version="3.18.1" />
       <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
       <PackageReference Include="Serilog.Sinks.SQLite" Version="6.0.0" />
       <PackageReference Include="YoutubeDLSharp" Version="1.2.0" />

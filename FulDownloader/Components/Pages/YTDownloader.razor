@@ -104,6 +104,7 @@
                         FormatCode = format.FormatId,
                         Uri = format.Url
                     })
+                    .OrderByDescending(x => x.Resolution)
                     .ToList();
 
                 VideoDataResult = new VideoDataModel
