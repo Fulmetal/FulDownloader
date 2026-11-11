@@ -4,7 +4,7 @@ namespace FulDownloader.Jobs;
 
 public class VideoCleanupJob(ILogger<VideoCleanupJob> logger) : IJob
 {
-    public async Task Execute(IJobExecutionContext context)
+    public ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = new CancellationToken())
     {
         var deletedFiles = 0;
         var files = Directory.GetFiles(Globals.DownloadPath);
@@ -17,5 +17,7 @@ public class VideoCleanupJob(ILogger<VideoCleanupJob> logger) : IJob
             }
         }
         logger.LogInformation($"Video cleanup job finished: found {files.Length} files, removed {deletedFiles} files.");
+        
+        return ValueTask.CompletedTask;
     }
 }

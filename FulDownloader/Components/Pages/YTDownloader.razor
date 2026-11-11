@@ -207,15 +207,13 @@
                 ProgBar.ResetProgress();
                 ProgBar.UpdateTitle("Processing");
                 Logger.LogInfo($"Processing video and audio into final output");
-                await FFMpegArguments.FromFileInput(vResult.Data)
+                await FFMpegArguments
+                    .FromFileInput(vResult.Data)
                     .AddFileInput(aResult.Data)
                     .OutputToFile(VideoDataResult.VideoFilePath, true, o => o
-                        .CopyChannel()
-                        .ForceFormat(VideoType.Mp4)
-                        .WithFastStart()
-                        .WithConstantRateFactor(27)
-                        .WithSpeedPreset(Speed.VeryFast))
-                    .NotifyOnProgress(encodingProgress, new TimeSpan(0, 0, Convert.ToInt32(VideoDataResult.VideoDuration)))
+                        .WithMap(0, StreamType.Video)
+                        .WithMap(1, StreamType.Audio)
+                        .CopyStreams())
                     .ProcessAsynchronously();
 
                 File.Delete(vResult.Data);
