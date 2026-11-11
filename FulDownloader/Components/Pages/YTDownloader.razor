@@ -196,14 +196,17 @@
                 
                 ProgBar.UpdateTitle("Downloading Video");
                 var options = new OptionSet() { Format = formatModel.FormatCode };
+                Logger.LogInfo($"Downloading video {VideoDataResult.VideoName} with format code {formatModel.FormatCode}");
                 var vResult = await Ytdl.RunVideoDownload(YoutubeUrl, overrideOptions: options, progress: progress, ct: cts.Token);
                 await JsRuntime.InvokeVoidAsync("consoleWriteLine", vResult);
                 ProgBar.ResetProgress();
                 ProgBar.UpdateTitle("Downloading Audio");
+                Logger.LogInfo($"Downloading audio");
                 var aResult = await Ytdl.RunAudioDownload(YoutubeUrl, progress: progress, ct: cts.Token);
 
                 ProgBar.ResetProgress();
                 ProgBar.UpdateTitle("Processing");
+                Logger.LogInfo($"Processing video and audio into final output");
                 await FFMpegArguments.FromFileInput(vResult.Data)
                     .AddFileInput(aResult.Data)
                     .OutputToFile(VideoDataResult.VideoFilePath, true, o => o
@@ -221,6 +224,7 @@
                 ProgBar.UpdateTitle("Fetching Video");
                 StateHasChanged();
                 await DownloadService.DownloadMp4Async(VideoDataResult.VideoFilename, VideoDataResult.VideoFilePath);
+                Logger.LogSuccess("Video download and processing complete.");
             }
         }
         catch (Exception e)
